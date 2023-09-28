@@ -1,0 +1,13 @@
+0831 22:59:00108 :: RunMain Error
+Traceback (most recent call last):
+  File "system_python.py", line 23, in system_python.__pack_import (system_python.c:934)
+  File "system_client.py", line 57, in init system_client (system_client.c:3972)
+  File "system_python.py", line 23, in system_python.__pack_import (system_python.c:934)
+  File "mouseModule.py", line 14, in init mouseModule (mouseModule.c:9202)
+  File "system_python.py", line 23, in system_python.__pack_import (system_python.c:934)
+  File "ui.py", line 10, in init ui (ui.c:146496)
+  File "system_python.py", line 23, in system_python.__pack_import (system_python.c:934)
+  File "localeInfo.py", line 95, in init localeInfo (localeInfo.c:11599)
+  File "localeInfo.py", line 53, in localeInfo.LoadLocaleFile (localeInfo.c:2792)
+  File "system_client.py", line 29, in system_client.pack_obj.__init__ (system_client.c:1197)
+AttributeError: 'NoneType' object has no attribute 'split'

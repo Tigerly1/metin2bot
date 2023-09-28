@@ -1,0 +1,30 @@
+python model_main_tf2.py -- \
+--model_dir=$MODEL_DIR --num_train_steps=$NUM_TRAIN_STEPS \
+--sample_1_of_n_eval_examples=$SAMPLE_1_OF_N_EVAL_EXAMPLES \
+--pipeline_config_path=$PIPELINE_CONFIG_PATH \
+--alsologtostderr
+
+PIPELINE_CONFIG_PATH=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\pipeline.config
+MODEL_DIR=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\checkpoint
+NUM_TRAIN_STEPS=500
+SAMPLE_1_OF_N_EVAL_EXAMPLES=1
+
+FINE TUNING WITH TENSORFLOW
+
+python C:\Users\Filip\Downloads\models-master\research\object_detection\model_main_tf2.py --model_dir=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\fine_tuned_model --num_train_steps=1000 --sample_1_of_n_eval_examples=1 --pipeline_config_path=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\pipeline.config --alsologtostderr
+
+python C:\Users\Filip\Downloads\models-master\research\object_detection\model_main_tf2.py --model_dir=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\fine_tuned_model --pipeline_config_path=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\pipeline.config --checkpoint_dir=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\fine_tuned_model --alsologtostderr
+
+set PYTHONPATH=%PYTHONPATH%;C:\Users\Filip\Downloads\models-master\research;C:\Users\Filip\Downloads\models-master\research\slim
+
+tensorboard --logdir=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\fine_tuned_model
+
+python C:\Users\Filip\Downloads\models-master\research\object_detection\exporter_main_v2.py --trained_checkpoint_dir=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\fine_tuned_model --pipeline_config_path=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\pipeline.config  --output_directory=C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\output
+
+OPENVINO
+
+mo --saved_model_dir C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\resnet-50\output\saved_model --input_shape [1,512,512,3] --data_type FP16
+
+mo --input_model path_to_your_model.pb --output_dir path_to_save_ir --input_shape [1,input_shape_dims...] \--data_type FP32
+
+C:\Users\Filip\AppData\Local\Programs\Python\Python311\python.exe pip install pip install openvino-dev[tensorflow2]

@@ -1,0 +1,6 @@
+
+
+C:\Users\Filip\Desktop\tob2tm\opencv\build\x64\vc15\bin\opencv_annotation.exe --annotations=pos.txt --images=metin_farm_bot/classifier/masno/metin45/pos
+C:\Users\Filip\Desktop\tob2tm\opencv\build\x64\vc15\bin\opencv_createsamples.exe -info pos.txt -w 24 -h 32 -num 62 -vec pos.vec
+C:\Users\Filip\Desktop\tob2tm\opencv\build\x64\vc15\bin\opencv_traincascade.exe -data C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\classifier\masno\metin45\cascade\ -vec C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\pos.vec -bg C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\neg.txt -w 24 -h 32 -numPos 62 -numNeg 131  -acceptanceRatioBreakValue 0.0001 -mode ALL
+C:\Users\Filip\Desktop\tob2tm\opencv\build\x64\vc15\bin\opencv_visualisation.exe --image=metin_farm_bot/classifier/sample_export_1691454993/pos_resized=True_1690980095.jpg --model=metin_farm_bot/classifier/cascade/cascade.xml
