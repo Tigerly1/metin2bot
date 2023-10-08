@@ -20,7 +20,7 @@ class CaptureAndDetectYolo:
         #self.classifier = cv.CascadeClassifier(model_path)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(device)
-        self.model = torch.hub.load(r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\yolov5', 'custom', path=r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\yolo\best.pt', source='local',force_reload=True )
+        self.model = torch.hub.load(r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\yolov5', 'custom', path=r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\ml\data\yolo\last.pt', source='local',force_reload=True )
         # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.model = self.model.to(self.device)
 

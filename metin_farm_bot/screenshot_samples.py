@@ -39,7 +39,7 @@ def main():
             cv.destroyAllWindows()
             break
         elif key == ord('p'):
-            cv.imwrite(r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\classifier\masno\metin45\pos\{}.jpg'.format(int(loop_time)), processed_screenshot)
+            cv.imwrite(r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\classifier\ervelia\water_map\metin\new\{}.jpg'.format(int(loop_time)), processed_screenshot)
             count['p'] += 1
             print(f'Saved positive sample. {count["p"]} total.')
         elif key == ord('n'):

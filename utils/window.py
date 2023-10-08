@@ -189,22 +189,24 @@ class MetinWindow(Window):
         else:
             return True
     def open_new_window(self):
-        game_path = r"C:\Users\Filip\Desktop\Ervelia_official_011\Ervelia.pl\metin2client.exe"
+        
+        #game_path = r"C:\Users\Filip\Desktop\Ervelia_official_011\Ervelia.pl\metin2client.exe"
+        game_path = r"C:\Users\Filip\Desktop\Ervelia_official_011\Ervelia.pl\Ervelia Patcher.exe"
         game_dir = r"C:\Users\Filip\Desktop\Ervelia_official_011\Ervelia.pl"
         # Request UAC elevation
         ctypes.windll.shell32.ShellExecuteW(None, "runas", game_path, None, game_dir, 1)
-        sleep(10)
+        sleep(60)
         
-        # interception.move_to(1154,690)
-        # patcher = win32gui.FindWindow(None, "Ervelia Patcher")
-        # win32gui.ShowWindow(patcher, 5)
-        # shell = win32com.client.Dispatch("WScript.Shell")
-        # shell.SendKeys('%')
-        # win32gui.SetForegroundWindow(patcher)
-        # sleep(0.1)
-        # interception.left_click(1)
-
-        max_wait_time = 1000
+        interception.move_to(1100,650)
+        patcher = win32gui.FindWindow(None, "Ervelia Patcher")
+        win32gui.ShowWindow(patcher, 5)
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shell.SendKeys('%')
+        win32gui.SetForegroundWindow(patcher)
+        sleep(0.5)
+        interception.left_click(1)
+        sleep(20)
+        max_wait_time = 200
         time_passed = 0
         while not self.check_if_window_is_opened():
             sleep(1)
@@ -309,9 +311,15 @@ class InterceptionInput(Window):
         interception.key_up("e")
 
     def activate_flag(self):
+        interception.press("3")
+
+    def activate_horse_dodge(self):
         interception.press("4")
 
-    
+    def activate_dodge(self, flag=False):
+        if flag: self.activate_flag()
+        else: self.activate_horse_dodge()
+
 
     def send_mount_away(self):
         # self.press_key(button='Ctrl', mode='click')
@@ -334,6 +342,12 @@ class InterceptionInput(Window):
         # self.call_mount()
         # self.un_mount()
         pass
+
+    def find_metin(self):
+        interception.press("f1")
+        sleep(0.1)
+
+
     def activate_buffs(self):
         interception.press("f5")
 
@@ -356,7 +370,7 @@ class InterceptionInput(Window):
         #sleep(0.1)
         interception.mouse_down('right')
         sleep(0.02)
-        interception.move_relative(random.randint(30, 50), -1)
+        interception.move_relative(random.randint(15, 35), 0)
         sleep(0.02)
         interception.mouse_up('right')
         sleep(0.03)

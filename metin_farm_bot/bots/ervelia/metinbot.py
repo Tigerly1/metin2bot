@@ -11,6 +11,7 @@ import datetime
 from utils import * #get_metin_needle_path, get_tesseract_path
 import pytesseract
 import re
+import datetime
 
 #from credentials import bot_token, chat_id
 #import telegram
@@ -56,7 +57,7 @@ class MetinFarmBot:
         self.calibrate_count = 0
         self.calibrate_threshold = 0
         self.rotate_count = 0
-        self.rotate_threshold = 9
+        self.rotate_threshold = 10
 
         self.started_hitting_time = None
         self.started_moving_time = None
@@ -70,9 +71,12 @@ class MetinFarmBot:
 
         self.started = time.time()
         #@self.send_telegram_message('Started')
-        self.metin_count = 0
+        self.metin_count_120 = 0
+        self.metin_count_water = 0
         self.last_error = None
         self.dangeons_count = 0
+
+
 
         self.current_click = 0
         self.multiple_detection_result = []
@@ -80,8 +84,8 @@ class MetinFarmBot:
         self.current_channel = 5
         self.current_metin_respawn = 1
         self.metin_teleports_passed = 0
-
-
+        self.current_metin_name = "water"
+        self.current_channel_skips = 0
 
         self.buff_interval = 76
         self.default_killing_mobs_time = 52
@@ -120,11 +124,31 @@ class MetinFarmBot:
                 self.check_if_player_is_logged_out()
                 self.close_window_if_not_working()
                 self.set_object_detector_state(True)
+                self.respawn_if_dead()
 
-                
+                current_time = datetime.datetime.now()
+                current_minute = current_time.minute
 
-                if self.screenshot is not None and self.detection_time is not None and \
-                        self.detection_time > self.time_entered_state + 0.13:
+                if (current_minute < 12 or current_minute > 58) and self.current_metin_name=="120":
+                    self.current_metin_name="water"
+                    self.current_channel_skips = 0
+                    self.change_metin_respawn_or_channel()
+
+                if self.rotate_count == 0 and not self.does_metin_exist_on_current_channel():
+                    if self.current_channel_skips > 11:
+                        self.current_channel_skips = 0
+                        self.current_metin_name="120"
+                        self.change_metin_respawn_or_channel()
+                    else:
+                        self.current_channel = (self.current_channel % 8) + 1
+                        self.change_channel(self.current_channel)
+                        if  self.current_metin_name=="water":
+                            self.current_channel_skips += 1
+                    
+
+
+                elif self.screenshot is not None and self.detection_time is not None and \
+                        self.detection_time > self.time_entered_state + 0.03:
                     
                     
                     #If no matches were found
@@ -161,27 +185,6 @@ class MetinFarmBot:
                         
 
             if self.state == BotState.CHECKING_MATCH:
-                # try:
-                #     if self.current_click > 0 and len(self.multiple_detection_result) > 0 and self.current_click < len(self.multiple_detection_result):
-                #         x = self.multiple_detection_result[self.current_click]
-                #         self.metin_window.mouse_move(*x)
-                        
-                    
-                #     elif self.current_click == 0 and 'click_positions' in self.detection_result and self.current_click < len(self.detection_result['click_positions'][:4]):
-                #         self.multiple_detection_result = self.detection_result['click_positions'][:4]
-                #         x = self.detection_result['click_positions'][self.current_click]
-                #         self.metin_window.mouse_move(*x)
-                        
-                       
-                # except Exception as e:
-                #     # detection result is not always there
-                #     print(e)
-                #     # print(self.current_click)
-                #     # print(self.multiple_detection_result)
-                #     # print(self.detection_result)
-                #     pass
-
-                #print(self.detection_result['sorted_rectangles'])
                 time.sleep(0.07)
                 pos = self.metin_window.get_relative_mouse_pos()
                 width = 200
@@ -205,34 +208,15 @@ class MetinFarmBot:
                     except Exception as e:
                         
                         print(e)
-                        # print(e)
                         pass
-                #self.metin_window.mouse_right_click()
-                # time.sleep(0.2)
-                # metin_info = self.get_clicked_place_info()
-                #print(self.get_clicked_place_info())
                 self.info_lock.release()
 
                 if match_loc is not None:
-                    # try:
-                    #     if self.detection_result:
-                    #         self.vision.save_results(self.detection_result['sorted_rectangles'][self.current_click],
-                    #             self.screenshot, 
-                    #                                 r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\classifier\ervelia\metin120\images\metin{}.jpg'.format(int(self.screenshot_time)),
-                    #                                 r'C:\Users\Filip\Desktop\tob2tm\Metin2-Bot-main\metin_farm_bot\classifier\ervelia\metin120\images\metin{}.txt'.format(int(self.screenshot_time)), 0
-                    #                                 )
-                    # except Exception as e:
-                        
-                    #     print(e)
-                    #     # print(e)
-                    #     pass
-
                     self.metin_window.mouse_click()
                     time.sleep(0.02)
-                    self.osk_window.activate_flag()
+                    self.osk_window.activate_dodge(self.current_metin_name=="water")
+                    #self.osk_window.activate_flag()
                     time.sleep(0.02)
-                    #self.multiple_detection_result = []
-                    #self.current_click = 0
                     self.set_object_detector_state(False)
                     self.put_info_text('Metin found!')
                     self.turn_on_buffs()
@@ -240,36 +224,8 @@ class MetinFarmBot:
                     self.switch_state(BotState.MOVING)
 
                 else:
-                    # if self.metin_count == 5:
-                    #     #self.osk_window
-                    #     # if self.rotate_count % 5 == 0:
-                    #     #     self.calibrate_view_after_dangeon()
-                        
-                    #     match_loc, match_val = self.vision.template_match_alpha(mob_title_box, utils.get_dangeon_25lvl_end_needle_path(), max_match_val=100000)
-                    #     if match_loc is not None:
-                    #         self.put_info_text('end of the dangeon found!')
-                    #         self.metin_window.mouse_click()
-                    #         time.sleep(0.15)
-                    #         print(self.get_after_dangeon_ui_info())
-                    #         if "Rozpoc" in self.get_after_dangeon_ui_info():
-                    #             self.metin_window.mouse_move(510,663)
-                    #             time.sleep(0.05)
-                    #             self.metin_window.mouse_click()
-                    #             time.sleep(6)
-                    #             self.metin_count = 0
-                    #             self.dangeons_count += 1
-                    #             self.put_info_text(f'{str(self.dangeons_count)} dangeons made')
-                    #             print(str(self.dangeons_count) + ' dangeons were made')
-                    #             self.calibrate_view
-                    #             self.switch_state(BotState.INITIALIZING)
+                  
                     try:
-                        # if self.current_click > 0 and len(self.multiple_detection_result) > 0 and self.current_click < len(self.multiple_detection_result) - 1:
-                        #     self.current_click += 1
-                        #     self.switch_state(BotState.CHECKING_MATCH)
-                        # elif self.current_click == 0 and 'click_positions' in self.detection_result and self.current_click < len(self.detection_result['click_positions'][:4]) - 1:
-                        #     self.current_click += 1
-                        #     self.switch_state(BotState.CHECKING_MATCH)
-                        # else:
                         self.multiple_detection_result = []
                         self.current_click = 0
                         self.put_info_text('No metin found -> rotate and search again!')
@@ -291,15 +247,6 @@ class MetinFarmBot:
                         self.rotate_view()
                         self.rotate_count += 1
                         self.switch_state(BotState.SEARCHING)
-                        # detection result is not always there
-                        # print(e)
-                        # print(self.current_click)
-                        # print(self.multiple_detection_result)
-                        # print(self.detection_result)
-                        # self.multiple_detection_result = []
-                        # self.current_click = 0
-                        # self.put_info_text('No metin found -> rotate and search again!')
-                        # self.switch_state(BotState.SEARCHING)
                         pass
 
 
@@ -312,7 +259,7 @@ class MetinFarmBot:
                 #print(result[0])
 
                 if self.started_moving_time > 4 and self.started_moving_time < 4.1:
-                    self.osk_window.activate_flag()
+                    self.osk_window.activate_dodge(self.current_metin_name=="water")
                     time.sleep(0.05)
                     self.osk_window.heal_yourself()
 
@@ -347,18 +294,24 @@ class MetinFarmBot:
                 if self.started_hitting_time is None:
                     self.started_hitting_time = time.time()
 
+                self.respawn_if_dead()
                 result = self.get_mob_info()
+
                 #print(result)
-                if result is None or time.time() - self.started_hitting_time >= 20:
+                if result is None or time.time() - self.started_hitting_time >= 100:
+                    self.respawn_if_dead()
                     self.started_hitting_time = None
                     self.put_info_text('Finished -> Collect drop')
-                    self.metin_count += 1
+                    if self.current_metin_name=="water":
+                        self.metin_count_water += 1
+                    else:
+                        self.metin_count_120 += 1
                     total = int(time.time() - self.started)
                     if int(self.last_metin_time) + 90 < total:
                         self.calibrate_view()
                     self.last_metin_time = total
-                    avg = round(total / self.metin_count, 1)
-                    print(f'{self.metin_count} - {datetime.timedelta(seconds=total)} - {avg}s/Metin')
+                    avg= round(total / (self.metin_count_120+self.metin_count_water), 1)
+                    print(f'{self.metin_count_water} - water metins and {self.metin_count_120} - usual metins || {datetime.timedelta(seconds=total)} - {avg}s/Metin')
 
                     #self.send_telegram_message(f'{self.metin_count} - {datetime.timedelta(seconds=total)} - {avg}s/Metin')
                     self.switch_state(BotState.COLLECTING_DROP)
@@ -454,8 +407,9 @@ class MetinFarmBot:
 
             if self.state == BotState.DEBUG:
                 #self.set_object_detector_state(True)
-                self.osk_window.rotate_with_mouse()
+                #self.osk_window.rotate_with_mouse()
                 time.sleep(0.5)
+                self.respawn_if_dead()
                 # if self.detection_result is not None:
                 #     self.metin_window.mouse_move(*self.detection_result['click_pos'])
                 #     time.sleep(0.06)
@@ -506,6 +460,7 @@ class MetinFarmBot:
         
         self.is_object_detector_enabled = state
         
+
 
     def get_object_detector_state(self):
    
@@ -576,7 +531,7 @@ class MetinFarmBot:
         time.sleep(0.8)
         self.osk_window.stop_rotating_up()
         self.osk_window.start_rotating_down()
-        time.sleep(0.9)
+        time.sleep(0.65)
         self.osk_window.stop_rotating_down()
         time.sleep(0.1)
         self.osk_window.start_zooming_out()
@@ -648,6 +603,24 @@ class MetinFarmBot:
             name = ' '.join(parts[:-1])
             return name, health
 
+    def does_metin_exist_on_current_channel(self):
+        self.osk_window.find_metin()
+        time.sleep(0.1)
+        chat_text = self.get_clicked_place_info((215,683),(812,732))
+        possible_chat_texts = ["Na tej mapie nie ma Kamieni Metin do znalezienia.",
+                               "Na te} mapie nie ma Kamiani Metin do znalezieria,",
+                               "Na tej mapie nie ma Kamieni Metin do znalezienia,",
+                               "Na tej mapie nie ma Kamieni Metin"]
+        if chat_text is not None:
+            metin_exists = True
+            for text in possible_chat_texts:
+                if text in chat_text:
+                    metin_exists = False
+            return metin_exists
+        return True
+        
+
+
     def get_mob_info(self):
         top_left = (300, 21)
         bottom_right = (700, 60)
@@ -661,9 +634,9 @@ class MetinFarmBot:
 
         return self.process_metin_info(mob_info_text)
 
-    def get_clicked_place_info(self):
-        top_left = (300, 21)
-        bottom_right = (705, 60)
+    def get_clicked_place_info(self, top_left, bottom_right):
+        # top_left = (300, 21)
+        # bottom_right = (705, 60)
 
         self.info_lock.acquire()
         mob_info_box = self.vision.extract_section(self.screenshot, top_left, bottom_right)
@@ -745,7 +718,10 @@ class MetinFarmBot:
 
     def teleport_to_next_metin_respawn(self, respawn_number=1):
        
-        metin_tp_page = [(338,519),(455,518),(340,551),(446,550)]
+        metin_tp_page = [(338,519),(455,518)]
+        if self.current_metin_name == "water":
+            metin_tp_page = [(340,551),(446,550)]
+            
         coords = [(718,272),(718,302), (718,331), (718, 363), (718, 392), (718, 421), (718,453)]
 
         self.metin_window.activate()
@@ -763,6 +739,9 @@ class MetinFarmBot:
         time.sleep(4)
 
     def change_channel(self, channel):
+        
+        self.metin_teleports_passed = 0
+
         channel_cords = [(896,40), (893,63), (896,84), (900, 102), (910,121), (931,131), (952,136), (973,130)]
 
         self.metin_window.activate()
@@ -772,10 +751,10 @@ class MetinFarmBot:
         time.sleep(0.1)
         self.metin_window.mouse_click()
         time.sleep(9)
-        self.osk_window.press_enter()
+        self.osk_window.heal_yourself()
 
     def change_metin_respawn_or_channel(self):
-       
+        
         
         if (self.metin_teleports_passed) % 12 == 11:
             self.current_metin_respawn = 0
@@ -788,7 +767,7 @@ class MetinFarmBot:
             self.current_metin_respawn = (self.current_metin_respawn % 6) + 1
             self.metin_teleports_passed += 1
             
-            self.teleport_to_next_metin_respawn(self.current_metin_respawn)
+            self.teleport_to_next_metin_respawn(self.current_metin_respawn, )
             self.calibrate_view()
         else:
             self.current_metin_respawn = (self.current_metin_respawn % 6) + 1
@@ -815,18 +794,36 @@ class MetinFarmBot:
         time.sleep(2)
 
     def respawn_if_dead(self):
-        self.info_lock.acquire()
-        screenshot = self.screenshot
-        self.info_lock.release()
+        respawn_text = self.get_clicked_place_info((65,70),(238,88))
+        possible_texts = ["Rozpocenij tutaj", "tutaj", "Rozpocenij", "Rozpocznij"]
 
-        match_loc, match_val = self.vision.template_match_alpha(screenshot, utils.get_respawn_needle_path())
-        if match_loc is not None:
-            #self.send_telegram_message('Respawn cause dead!')
-            self.put_info_text('Respawn!')
-            self.metin_window.mouse_move(match_loc[0], match_loc[1] + 5)
-            time.sleep(0.5)
-            self.metin_window.mouse_click()
-            time.sleep(3)
+        if respawn_text is not None:
+            respawn = False
+            for text in possible_texts:
+                if text in respawn_text:
+                    respawn = True
+            
+            if respawn == True:
+                time.sleep(10)
+                time.sleep(0.2)
+                self.metin_window.mouse_move(156,80)
+                time.sleep(0.04)
+                self.metin_window.mouse_click()
+                time.sleep(0.5)
+                self.osk_window.heal_yourself()
+                time.sleep(0.1)
+                self.osk_window.heal_yourself()
+                time.sleep(0.2)
+                self.osk_window.un_mount()
+                time.sleep(0.4)
+        # match_loc, match_val = self.vision.template_match_alpha(screenshot, utils.get_respawn_needle_path())
+        # if match_loc is not None:
+        #     #self.send_telegram_message('Respawn cause dead!')
+        #     self.put_info_text('Respawn!')
+        #     self.metin_window.mouse_move(match_loc[0], match_loc[1] + 5)
+        #     time.sleep(0.5)
+        #     self.metin_window.mouse_click()
+        #     time.sleep(3)
 
     
 
